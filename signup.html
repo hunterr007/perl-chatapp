@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .signup-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        .signup-container h2 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+            margin-top: 0;
+        }
+        .signup-container label {
+            color: #343a40;
+            font-weight: bold;
+        }
+        .signup-container input[type="text"],
+        .signup-container input[type="email"],
+        .signup-container input[type="password"],
+        .signup-container input[type="tel"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .signup-container input[type="text"]:focus,
+        .signup-container input[type="email"]:focus,
+        .signup-container input[type="password"]:focus,
+        .signup-container input[type="tel"]:focus {
+            border-color: #007bff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+        }
+        .signup-container .btn-login {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.15s ease-in-out;
+        }
+        .signup-container .btn-login:hover {
+            background-color: #0056b3;
+        }
+        .signup-container .btn-reset {
+            background-color: #dc3545;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.15s ease-in-out;
+        }
+        .signup-container .btn-reset:hover {
+            background-color: #c82333;
+        }
+        .signup-container .error-message {
+            color: #721c24;
+            border-color: #f5c6cb;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .signup-container .success-message {
+            color: #155724;
+            border-color: #c3e6cb;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: center;
+        }
+        .btn-container button {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <h2>Sign Up</h2>
+        <div id="formContainer">
+        </div>
+        <form id="signupForm" action="/cgi-bin/signup.cgi" method="post" onsubmit="submitForm(event)">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Enter Name" required oninput="validateName()" title="Name should contain only alphabets and spaces, and should not start with a space.">
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number:</label>
+                <input type="tel" id="phone" name="phone" class="form-control" placeholder="Enter Phone Number" required oninput="validatePhone()" title="Phone number should be numeric and 10 digits long.">
+            </div>
+            <div class="form-group">
+                <label for="emailaddress">Email Address:</label>
+                <input type="email" id="emailaddress" name="emailaddress" class="form-control" placeholder="Enter Email Address" required oninput="validateEmail()" title="Email Address">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password" required oninput="validatePassword()" title="Password must be at least 8 characters long and contain at least 2 numbers.">
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Enter Password" class="form-control" required oninput="validatePassword()" title="Password must be at least 8 characters long and contain at least 2 numbers.">
+            </div>
+            <div class="btn-container">
+                <button type="submit" class="btn btn-login">Submit</button>
+                <!-- <input type="reset" class="btn btn-reset" value="Reset"> -->
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function validateName() {
+            var name = document.getElementById('name');
+            var nameValue = name.value.trim();
+            var nameRegex = /^[A-Za-z][A-Za-z ]*$/;
+
+            if (!nameRegex.test(nameValue)) {
+                name.setCustomValidity("Name should contain only alphabets and spaces, and should not start with a space.");
+                return false;
+            } else {
+                name.setCustomValidity('');
+                return true;
+            }
+
+                   return true;
+        }
+
+        function validatePhone() {
+            var phone = document.getElementById('phone');
+            var phoneValue = phone.value.trim();
+            var phoneRegex = /^\d{10}$/;
+
+            if (!phoneRegex.test(phoneValue)) {
+                phone.setCustomValidity("Phone number should be numeric and 10 digits long.");
+                return false;
+            } else {
+                phone.setCustomValidity('');
+                return true;
+            }
+                   return true;
+        }
+
+        function validateEmail() {
+           var email = document.getElementById('emailaddress');
+           var emailValue = email.value.trim();
+           var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+           if (!emailRegex.test(emailValue)) {
+                email.setCustomValidity("Invalid email address format.");
+                return false;
+            } else {
+                email.setCustomValidity('');
+                return true;
+            }
+        }
+
+        function validatePassword() {
+            var password = document.getElementById('password');
+            var confirmPassword = document.getElementById('confirmPassword');
+            var passwordValue = password.value;
+            var confirmPasswordValue = confirmPassword.value;
+            var passwordRegex = /^(?=.*\d.*\d).{8,}$/;
+
+            if (!passwordRegex.test(passwordValue)) {
+                password.setCustomValidity("Password must be at least 8 characters long and contain at least 2 numbers.");
+                return false;
+            } else if (passwordValue !== confirmPasswordValue) {
+                confirmPassword.setCustomValidity("Passwords do not match.");
+                return false;
+            } else {
+                password.setCustomValidity('');
+                confirmPassword.setCustomValidity('');
+                return true;
+            }
+        }
+
+        function validateForm() {
+            var isNameValid = validateName();
+            var isPhoneValid = validatePhone();
+            var isEmailValid = validateEmail();
+            var isPasswordValid = validatePassword();
+
+            return isNameValid && isPhoneValid && isEmailValid && isPasswordValid;
+        }
+
+        function submitForm(event) {
+            event.preventDefault(); // Prevent default form submission
+            var form = document.getElementById('signupForm');
+            if (!validateForm()) {
+                return; // Exit if form validation fails
+            }
+
+            var formData = new FormData(form);
+
+            fetch('/cgi-bin/signup.cgi', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccessMessage(data.message);
+                    setTimeout(() => {
+                        window.location.href = '/login.html'; // Redirect to login page after 2 seconds
+                    }, 2000); // Adjust timeout as needed
+                } else {
+                    showErrorMessage(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showErrorMessage('An error occurred while processing your request.');
+            });
+        }
+
+        function showSuccessMessage(message) {
+            var successMessage = document.createElement('div');
+            successMessage.classList.add('success-message');
+                        successMessage.style.color = 'green';
+            successMessage.innerHTML = message;
+
+            var formContainer = document.getElementById('formContainer');
+            formContainer.innerHTML = '';
+            formContainer.appendChild(successMessage);
+        }
+
+        function showErrorMessage(message) {
+            var errorMessage = document.createElement('div');
+            errorMessage.classList.add('error-message');
+                        errorMessage.style.color = 'red';
+            errorMessage.innerHTML = message;
+
+            var formContainer = document.getElementById('formContainer');
+            formContainer.innerHTML = '';
+            formContainer.appendChild(errorMessage);
+        }
+    </script>
+</body>
+</html>

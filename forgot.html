@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        .container h2 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+            margin-top: 0;
+        }
+        .container label {
+            color: #343a40;
+            font-weight: bold;
+        }
+        .container input[type="text"],
+        .container input[type="email"],
+        .container input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .container input[type="text"]:focus,
+        .container input[type="email"]:focus,
+        .container input[type="password"]:focus {
+            border-color: #007bff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+        }
+        .container .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.15s ease-in-out;
+        }
+        .container .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .container .error-message,
+        .container .success-message {
+            display: none;
+            color: white;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .container .validation-error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+                #spinner {
+                        display: none;
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 50px;
+                        height: 50px;
+                }
+
+                #spinner img {
+                        width: 100%;
+                        height: 100%;
+                        background: transparent;
+                }
+
+                #spinner {
+                        display: none;
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 70px;
+                        height: 70px;
+                        z-index: 1000; /* Ensure the spinner is above everything else */
+                }
+
+                #spinnerText {
+                        position: absolute;
+                        top: calc(50% - 20px); /* Adjust the top position as needed */
+                        left: 50%;
+                        transform: translateX(-50%);
+                        font-size: 16px;
+                        color: #333;
+                        z-index: 1001; /* Ensure the text is above the spinner */
+                }
+
+                .container.waiting {
+                        pointer-events: none; /* Disable pointer events */
+                        opacity: 0.5; /* Reduce opacity to indicate disabled state */
+                }
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Reset Your Password</h2>
+        <div id="initialStep">
+            <div class="form-group">
+                <label>
+                    <input type="radio" name="otpMethod" value="sms" onclick="showInputField()"> SMS
+                </label>
+                <label>
+                    <input type="radio" name="otpMethod" value="email" onclick="showInputField()"> Email
+                </label>
+            </div>
+            <div class="form-group" id="inputField" style="display: none;">
+                <label id="inputLabel" for="otpInput"></label>
+                <input type="text" id="otpInput" class="form-control" placeholder="">
+                <div class="validation-error" id="validationError"></div>
+                <div><br/></div>
+            </div>
+            <button class="btn btn-primary" onclick="sendOtp()">Continue</button>
+        </div>
+        <div id="otpVerificationStep" style="display: none;">
+            <div class="form-group">
+                <label for="otp">Enter OTP:</label>
+                <input type="text" id="otp" class="form-control" placeholder="Enter OTP">
+                <input type="hidden" id="otpMethod" name="otpMethod">
+                <input type="hidden" id="otpInputHidden" name="otpInput">
+            </div>
+            <button class="btn btn-primary" onclick="verifyOtp()">Submit</button>
+        </div>
+        <div id="passwordResetStep" style="display: none;">
+            <div class="form-group">
+                <label for="newPassword">Enter New Password:</label>
+                <input type="password" id="newPassword" class="form-control" placeholder="New Password">
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm New Password:</label>
+                <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm Password">
+            </div>
+            <button class="btn btn-primary" onclick="resetPassword()">Reset Password</button>
+        </div>
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+    </div>
+
+    <script>
+        function showInputField() {
+            var selectedMethod = document.querySelector('input[name="otpMethod"]:checked').value;
+            var inputField = document.getElementById('inputField');
+            var inputLabel = document.getElementById('inputLabel');
+            var otpInput = document.getElementById('otpInput');
+            var validationError = document.getElementById('validationError');
+
+            if (selectedMethod === 'sms') {
+                inputLabel.innerText = 'Enter Phone Number:';
+                otpInput.type = 'text';
+                otpInput.placeholder = 'Phone Number';
+            } else if (selectedMethod === 'email') {
+                inputLabel.innerText = 'Enter Email Address:';
+                otpInput.type = 'email';
+                otpInput.placeholder = 'Email Address';
+            }
+            validationError.innerText = '';
+            inputField.style.display = 'block';
+        }
+
+                        function sendOtp() {
+            // Disable user input while sending OTP
+            document.querySelector('.container').classList.add('waiting');
+            document.getElementById('spinner').style.display = 'block';
+
+            var selectedMethod = document.querySelector('input[name="otpMethod"]:checked').value;
+            var otpInput = document.getElementById('otpInput').value;
+            var validationError = document.getElementById('validationError');
+            var errorMessage = document.getElementById('errorMessage');
+
+            validationError.innerText = '';
+            errorMessage.style.display = 'none';
+
+            if (selectedMethod === 'sms') {
+                if (!validatePhoneNumber(otpInput)) {
+                    validationError.innerText = 'Please enter a valid 10-digit phone number.';
+                    document.querySelector('.container').classList.remove('waiting');
+                    document.getElementById('spinner').style.display = 'none';
+                    return;
+                }
+            } else if (selectedMethod === 'email') {
+                if (!validateEmail(otpInput)) {
+                    validationError.innerText = 'Please enter a valid email address.';
+                    document.querySelector('.container').classList.remove('waiting');
+                    document.getElementById('spinner').style.display = 'none';
+                    return;
+                }
+            }
+
+            fetch('/cgi-bin/send_otp.pl', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    otpMethod: selectedMethod,
+                    otpInput: otpInput
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('.container').classList.remove('waiting');
+                document.getElementById('spinner').style.display = 'none';
+
+                if (data.status === 'success') {
+                    showSuccessMessage('OTP sent successfully');
+                    document.getElementById('initialStep').style.display = 'none';
+                    document.getElementById('otpVerificationStep').style.display = 'block';
+                    document.getElementById('otpMethod').value = selectedMethod;
+                    document.getElementById('otpInputHidden').value = otpInput;
+                } else {
+                    showErrorMessage(data.message || 'Failed to send OTP');
+                }
+            })
+            .catch(error => {
+                document.querySelector('.container').classList.remove('waiting');
+                document.getElementById('spinner').style.display = 'none';
+
+                showErrorMessage('Error sending OTP');
+                console.error('Error:', error);
+            });
+        }
+
+
+        function sendOtpwoSpinner() {
+            var selectedMethod = document.querySelector('input[name="otpMethod"]:checked').value;
+            var otpInput = document.getElementById('otpInput').value;
+            var validationError = document.getElementById('validationError');
+            var errorMessage = document.getElementById('errorMessage');
+
+            validationError.innerText = '';
+            errorMessage.style.display = 'none';
+
+            if (selectedMethod === 'sms') {
+                if (!validatePhoneNumber(otpInput)) {
+                    validationError.innerText = 'Please enter a valid 10-digit phone number.';
+                    return;
+                }
+            } else if (selectedMethod === 'email') {
+                if (!validateEmail(otpInput)) {
+                    validationError.innerText = 'Please enter a valid email address.';
+                    return;
+                }
+            }
+
+            // Send OTP to server
+            fetch('/cgi-bin/send_otp.pl', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    otpMethod: selectedMethod,
+                    otpInput: otpInput
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showSuccessMessage('OTP sent successfully');
+                    document.getElementById('initialStep').style.display = 'none';
+                    document.getElementById('otpVerificationStep').style.display = 'block';
+                    document.getElementById('otpMethod').value = selectedMethod;
+                    document.getElementById('otpInputHidden').value = otpInput;
+                } else {
+                    showErrorMessage(data.message || 'Failed to send OTP');
+                }
+            })
+            .catch(error => {
+                showErrorMessage('Error sending OTP');
+                console.error('Error:', error);
+            });
+        }
+
+        function validatePhoneNumber(phone) {
+            var phonePattern = /^\d{10}$/;
+            return phonePattern.test(phone);
+        }
+
+        function validateEmail(email) {
+            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailPattern.test(email);
+        }
+
+        function verifyOtp() {
+                var otp = document.getElementById('otp').value;
+                var otpMethod = document.getElementById('otpMethod').value;
+                var otpInput = document.getElementById('otpInputHidden').value;
+                var errorMessage = document.getElementById('errorMessage');
+
+                // Clear error message when OTP is entered and submit button is clicked
+                errorMessage.innerText = '';
+
+                if (!otp) {
+                        showErrorMessage('Please enter the OTP');
+                        return;
+                }
+
+                // Verify OTP with server
+                fetch('/cgi-bin/verify_otp.cgi', {
+                        method: 'POST',
+                        headers: {
+                                'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                                otp: otp,
+                                otpMethod: otpMethod,
+                                otpInput: otpInput
+                        })
+                })
+                .then(response => response.json())
+                .then(data => {
+                        if (data.status === 'success') {
+                                showSuccessMessage('OTP verified successfully');
+                                document.getElementById('otpVerificationStep').style.display = 'none';
+                                document.getElementById('passwordResetStep').style.display = 'block';
+                        } else {
+                                showErrorMessage(data.message || 'Failed to verify OTP');
+                        }
+                })
+                .catch(error => {
+                        showErrorMessage('Error verifying OTP');
+                        console.error('Error:', error);
+                });
+        }
+
+
+        function resetPassword() {
+                        var newPassword = document.getElementById('newPassword').value;
+                        var confirmPassword = document.getElementById('confirmPassword').value;
+                        var otpMethod = document.getElementById('otpMethod').value;
+                        var otpInput = document.getElementById('otpInputHidden').value;
+
+                        var passwordRegex = /^(?=.*\d.*\d).{8,}$/;
+
+                        // Clear previous error messages
+                        document.getElementById('errorMessage').innerText = '';
+                        document.getElementById('successMessage').innerText = '';
+
+                        if (!passwordRegex.test(newPassword)) {
+                                showErrorMessage("Password must be at least 8 characters long and contain at least 2 numbers.");
+                                return;
+                        }
+
+                        if (!newPassword || !confirmPassword) {
+                                showErrorMessage('Please fill in both password fields');
+                                return;
+                        }
+
+                        if (newPassword !== confirmPassword) {
+                                showErrorMessage('Passwords do not match');
+                                return;
+                        }
+
+                        // Update password on server
+                        fetch('/cgi-bin/reset_password.cgi', {
+                                method: 'POST',
+                                headers: {
+                                        'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                        newPassword: newPassword,
+                                        confirmPassword: confirmPassword,
+                                        otpMethod: otpMethod,
+                                        otpInput: otpInput
+                                })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                                if (data.status === 'success') {
+                                        showSuccessMessage('Password reset successfully');
+
+                                        setTimeout(function() {
+                                                window.location.href = 'login.html';
+                                        }, 3000);
+                                } else {
+                                        showErrorMessage(data.message || 'Failed to reset password');
+                                }
+                        })
+                        .catch(error => {
+                                showErrorMessage('Error resetting password');
+                                console.error('Error:', error);
+                        });
+                }
+
+
+        function showErrorMessage(message) {
+            var errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.backgroundColor = '';
+            errorMessage.style.color = 'red';
+            errorMessage.style.display = 'block';
+            errorMessage.innerText = message;
+        }
+
+        function showSuccessMessage(message) {
+            var successMessage = document.getElementById('successMessage');
+            successMessage.style.backgroundColor = '';
+            successMessage.style.color = 'green';
+            successMessage.style.display = 'block';
+            successMessage.innerText = message;
+            setTimeout(function() {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+
+
+    </script>
+
+        <img src="https://loading.io/assets/mod/spinner/atom/sample.gif" id="spinner" style="display: none;">
+
+
+</body>
+</html>

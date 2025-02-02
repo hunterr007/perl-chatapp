@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .login-container form {
+            display: flex;
+            flex-direction: column;
+        }
+        .login-container label {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .login-container input[type="text"]:focus,
+        .login-container input[type="password"]:focus {
+            border-color: #007bff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .login-container .btn-login {
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 5px;
+            transition: background-color 0.15s ease-in-out;
+        }
+        .login-container .btn-login:hover {
+            background-color: #0056b3;
+        }
+        .login-container .btn-reset {
+            background-color: #dc3545;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 5px;
+            transition: background-color 0.15s ease-in-out;
+        }
+        .login-container .btn-reset:hover {
+            background-color: #c82333;
+        }
+        .login-container .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .login-container .links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.15s ease-in-out;
+        }
+        .login-container .links a:hover {
+            color: #0056b3;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <div id="error-message" class="error-message"></div>
+        <form id="login-form" action="/cgi-bin/login.cgi" method="post" onsubmit="validateForm(event)">
+            <div class="form-group">
+                <label for="username">Email:</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Enter Email Address" required oninput="validateEmail()" title="Email Address">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password" required oninput="validatePassword()" title="Password must be at least 8 characters long and contain at least 2 numbers.">
+            </div>
+            <button type="submit" class="btn btn-login btn-block">Login</button>
+            <button type="reset" class="btn btn-reset btn-block">Reset</button>
+        </form>
+        <div class="links">
+            <a href="/forgot.html">Forgot password?</a>
+            <span>|</span>
+            <a href="/signup.html">Create an account</a>
+        </div>
+    </div>
+    <script>
+        function validateEmail() {
+            var email = document.getElementById('username');
+            var emailValue = email.value.trim();
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(emailValue)) {
+                email.setCustomValidity("Invalid email address format.");
+                return false;
+            } else {
+                email.setCustomValidity('');
+                return true;
+            }
+        }
+
+        function validatePassword() {
+            var password = document.getElementById('password');
+            var passwordValue = password.value;
+            var passwordRegex = /^(?=.*\d.*\d).{8,}$/;
+
+            if (!passwordRegex.test(passwordValue)) {
+                password.setCustomValidity("Password must be at least 8 characters long and contain at least 2 numbers.");
+                return false;
+            } else {
+                password.setCustomValidity('');
+                return true;
+            }
+        }
+
+        function validateForm(event) {
+            event.preventDefault();
+            const errorMessageDiv = document.getElementById('error-message');
+            if (!validateEmail() || !validatePassword()) {
+                errorMessageDiv.textContent = "Please correct the highlighted errors and try again.";
+                return;
+            }
+            const form = document.getElementById('login-form');
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: form.method,
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    errorMessageDiv.textContent = result.message;
+                    window.location.href = result.redirect_url; // Redirect to the appropriate page with the username in the URL
+                } else {
+                    errorMessageDiv.textContent = result.message;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessageDiv.textContent = "An error occurred while processing your request.";
+            });
+        }
+    </script>
+</body>
+</html>
