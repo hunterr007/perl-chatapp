@@ -147,9 +147,9 @@ sub send_sms {
     $phone = "+91$phone"; # Assuming the country code for India
 
     my $sender = SMS::Send->new('Twilio',
-        _accountsid => 'AC2faa70e57adc52323d13a8dad9461c48',
-        _authtoken  => '6aba98a5daf92fa468ae10ee041b1960',
-        _from       => '+17069792452',
+        _accountsid => 'XYZ',
+        _authtoken  => 'XYZ',
+        _from       => '+000000',
     );
 
     my $sent = $sender->send_sms(
@@ -165,7 +165,7 @@ sub send_email {
     my $email_obj  = Email::Simple->create(
         header => [
             To      => $email,
-            From    => 'nidhimishra28@gmail.com',
+            From    => 'XYZ',
             Subject => 'Your OTP Code',
         ],
         body => $message,
@@ -175,7 +175,7 @@ sub send_email {
         {
             host     => 'smtp.gmail.com',
             port     => 587,
-            username => 'nidhimishra28@gmail.com',
+            username => 'XYZ',
             password => 'jmum cdnz xljd yqpx',
         }
     );
